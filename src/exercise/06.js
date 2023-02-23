@@ -44,12 +44,11 @@ function PokemonInfo({pokemonName}) {
   return <PokemonDataView pokemon={pokemon} />
 }
 
-function ErrorFallback({error, resetErrorBoundary}) {
+function ErrorFallback({error}) {
   return (
     <div role="alert">
       <p>Something went wrong:</p>
       <p>{error.message}</p>
-      <button onClick={resetErrorBoundary}>Try again</button>
     </div>
   )
 }
@@ -67,8 +66,8 @@ function App() {
       <hr />
       <div className="pokemon-info">
         <ErrorBoundary
+          resetKeys={[pokemonName]}
           FallbackComponent={ErrorFallback}
-          onReset={() => setPokemonName('')}
         >
           <PokemonInfo pokemonName={pokemonName} />
         </ErrorBoundary>
