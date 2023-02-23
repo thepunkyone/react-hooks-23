@@ -3,7 +3,6 @@
 
 import * as React from 'react'
 import {useLocalStorageState} from '../utils'
-import {useState} from 'react'
 
 function Board({squares, onClick}) {
   function renderSquare(i) {
@@ -36,8 +35,8 @@ function Board({squares, onClick}) {
 }
 
 function Game() {
-  const defaultCurrentStep = Array(9).fill(null)
-  const defaultHistory = [defaultCurrentStep]
+  const defaultCurrentStep = 0
+  const defaultHistory = [Array(9).fill(null)]
 
   const [history, setHistory] = useLocalStorageState('history', defaultHistory)
 
@@ -46,23 +45,24 @@ function Game() {
     defaultCurrentStep,
   )
 
-  const nextValue = calculateNextValue(currentStep)
-  const winner = calculateWinner(currentStep)
-  const status = calculateStatus(winner, currentStep, nextValue)
+  const currentSquares = history[currentStep]
+
+  const nextValue = calculateNextValue(currentSquares)
+  const winner = calculateWinner(currentSquares)
+  const status = calculateStatus(winner, currentSquares, nextValue)
 
   function selectSquare(square) {
-    if (winner || currentStep[square]) {
+    if (winner || currentSquares[square]) {
       return
     }
 
-    const squaresCopy = [...currentStep]
+    const newHistory = history.slice(0, currentStep + 1)
+
+    const squaresCopy = [...currentSquares]
     squaresCopy[square] = nextValue
 
-    const historyCopy = [...history]
-    historyCopy.push(squaresCopy)
-
-    setHistory(historyCopy)
-    setCurrentStep(squaresCopy)
+    setHistory([...newHistory, squaresCopy])
+    setCurrentStep(newHistory.length)
   }
 
   function restart() {
@@ -70,19 +70,14 @@ function Game() {
     setCurrentStep(defaultCurrentStep)
   }
 
-  const moves = history.map((step, i) => {
-    const isFirstStep = i === 0
-    const isCurrentStep =
-      JSON.stringify(history[i]) === JSON.stringify(currentStep)
+  const moves = history.map((stepSquares, step) => {
+    const isFirstStep = step === 0
+    const isCurrentStep = currentStep === step
 
     return (
-      <li>
-        <button
-          key={JSON.stringify(step)}
-          onClick={() => setCurrentStep(history[i])}
-          disabled={isCurrentStep}
-        >
-          {isFirstStep ? 'Go to game start' : `Go to move #${i}`}
+      <li key={step}>
+        <button onClick={() => setCurrentStep(step)} disabled={isCurrentStep}>
+          {isFirstStep ? 'Go to game start' : `Go to move #${step}`}
           {isCurrentStep ? ' (current)' : ''}
         </button>
       </li>
@@ -92,7 +87,7 @@ function Game() {
   return (
     <div className="game">
       <div className="game-board">
-        <Board onClick={selectSquare} squares={currentStep} />
+        <Board onClick={selectSquare} squares={currentSquares} />
         <button className="restart" onClick={restart}>
           restart
         </button>
