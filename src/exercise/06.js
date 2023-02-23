@@ -14,31 +14,33 @@ import {
 } from '../pokemon'
 
 function PokemonInfo({pokemonName}) {
-  const [pokemon, setPokemon] = React.useState(null)
-  const [error, setError] = React.useState(null)
-  const [status, setStatus] = React.useState('idle')
+  const [state, setState] = React.useState({
+    pokemon: null,
+    error: null,
+    status: 'idle',
+  })
+
+  const {pokemon, error, status} = state
 
   React.useEffect(() => {
     if (!pokemonName) return
 
-    setStatus('pending')
-    setPokemon(null)
+    setState({pokemon: null, error: null, status: 'pending'})
 
     fetchPokemon(pokemonName).then(
       pokemonData => {
-        setPokemon(pokemonData)
-        setStatus('resolved')
+        setState({pokemon: pokemonData, error: null, status: 'resolved'})
       },
       err => {
-        setError(err)
-        setStatus('rejected')
+        setState({pokemon: null, error: err, status: 'rejected'})
       },
     )
   }, [pokemonName])
 
   if (!pokemonName) return 'Submit a pokemon'
 
-  if (status === 'pending') return <PokemonInfoFallback name={pokemonName} />
+  if (status === 'idle' || status === 'pending')
+    return <PokemonInfoFallback name={pokemonName} />
 
   if (status === 'rejected')
     return (
