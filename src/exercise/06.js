@@ -37,10 +37,9 @@ function PokemonInfo({pokemonName}) {
     )
   }, [pokemonName])
 
-  if (!pokemonName) return 'Submit a pokemon'
+  if (status === 'idle') return 'Submit a pokemon'
 
-  if (status === 'idle' || status === 'pending')
-    return <PokemonInfoFallback name={pokemonName} />
+  if (status === 'pending') return <PokemonInfoFallback name={pokemonName} />
 
   if (status === 'rejected')
     return (
